@@ -4,9 +4,15 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "StarkWare.cairo1",
-                "tamasfe.even-better-toml"
-            ]
+        "StarkWare.cairo1",
+        "tamasfe.even-better-toml",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "esbenp.prettier-vscode",
+        "vscode-icons-team.vscode-icons",
+        "WakaTime.vscode-wakatime"
+
+      ]
         }
     }
 }
