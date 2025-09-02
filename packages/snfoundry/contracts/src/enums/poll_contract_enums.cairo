@@ -18,4 +18,5 @@ pub enum GateType {
     None,
     ERC20Token,
     ERC721NFT,
+    ERC721NFTCollection,
 }

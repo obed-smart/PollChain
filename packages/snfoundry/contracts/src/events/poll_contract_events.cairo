@@ -35,6 +35,6 @@ pub struct PollEnded {
     pub poll_id: u256,
     pub total_votes: u64,
     pub winning_option: u32,
+    pub ended_at: u64,
 }
-
 

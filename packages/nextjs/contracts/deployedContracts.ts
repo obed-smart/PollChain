@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     PollingContract: {
       address:
-        "0x11c012aeda1311d0e2760a9d0b17944f68aa6d481787c3b35fe4f1274db1669",
+        "0x5e5baacb3d9eadc8494bacd8c1d91bd1fefca5d5c0b6db8c6c1d93f4e9948c4",
       abi: [
         {
           type: "impl",
