@@ -3,6 +3,537 @@
  * You should not edit it manually or your changes might be overwritten.
  */
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  devnet: {
+    PollingContract: {
+      address:
+        "0x5e5baacb3d9eadc8494bacd8c1d91bd1fefca5d5c0b6db8c6c1d93f4e9948c4",
+      abi: [
+        {
+          type: "impl",
+          name: "Pollingimpl",
+          interface_name:
+            "contracts::interfaces::ipoll_contract_interface::IPollingContract",
+        },
+        {
+          type: "struct",
+          name: "core::byte_array::ByteArray",
+          members: [
+            {
+              name: "data",
+              type: "core::array::Array::<core::bytes_31::bytes31>",
+            },
+            {
+              name: "pending_word",
+              type: "core::felt252",
+            },
+            {
+              name: "pending_word_len",
+              type: "core::integer::u32",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "contracts::enums::poll_contract_enums::PollType",
+          variants: [
+            {
+              name: "YesNo",
+              type: "()",
+            },
+            {
+              name: "MultipleChoice",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<core::integer::u64>",
+          variants: [
+            {
+              name: "Some",
+              type: "core::integer::u64",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "contracts::enums::poll_contract_enums::GateType",
+          variants: [
+            {
+              name: "None",
+              type: "()",
+            },
+            {
+              name: "ERC20Token",
+              type: "()",
+            },
+            {
+              name: "ERC721NFT",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<core::integer::u256>",
+          variants: [
+            {
+              name: "Some",
+              type: "core::integer::u256",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::TokenGateConfig",
+          members: [
+            {
+              name: "enabled",
+              type: "core::bool",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "minimum_balance",
+              type: "core::integer::u256",
+            },
+            {
+              name: "required_nft_id",
+              type: "core::option::Option::<core::integer::u256>",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<contracts::structs::poll_contract_structs::TokenGateConfig>",
+          variants: [
+            {
+              name: "Some",
+              type: "contracts::structs::poll_contract_structs::TokenGateConfig",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Poll",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+            },
+            {
+              name: "creator",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "title",
+              type: "core::byte_array::ByteArray",
+            },
+            {
+              name: "description",
+              type: "core::byte_array::ByteArray",
+            },
+            {
+              name: "poll_type",
+              type: "contracts::enums::poll_contract_enums::PollType",
+            },
+            {
+              name: "created_at",
+              type: "core::integer::u64",
+            },
+            {
+              name: "end_time",
+              type: "core::integer::u64",
+            },
+            {
+              name: "total_votes",
+              type: "core::integer::u256",
+            },
+            {
+              name: "is_token_gated",
+              type: "core::bool",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "minimum_balance",
+              type: "core::integer::u256",
+            },
+            {
+              name: "required_nft_id",
+              type: "core::option::Option::<core::integer::u256>",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Vote",
+          members: [
+            {
+              name: "voter",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "option_index",
+              type: "core::integer::u8",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::interfaces::ipoll_contract_interface::IPollingContract",
+          items: [
+            {
+              type: "function",
+              name: "create_poll",
+              inputs: [
+                {
+                  name: "title",
+                  type: "core::byte_array::ByteArray",
+                },
+                {
+                  name: "description",
+                  type: "core::byte_array::ByteArray",
+                },
+                {
+                  name: "poll_options",
+                  type: "core::array::Array::<core::byte_array::ByteArray>",
+                },
+                {
+                  name: "poll_type",
+                  type: "contracts::enums::poll_contract_enums::PollType",
+                },
+                {
+                  name: "end_time",
+                  type: "core::option::Option::<core::integer::u64>",
+                },
+                {
+                  name: "token_gate_config",
+                  type: "core::option::Option::<contracts::structs::poll_contract_structs::TokenGateConfig>",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "vote",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "option_index",
+                  type: "core::integer::u8",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "close_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Poll",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "has_voted",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_user_vote",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Vote",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_active_polls",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::integer::u256>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_polls_by_creator",
+              inputs: [
+                {
+                  name: "creator",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::Poll>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_polls",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::PollCreated",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "creator",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "title",
+              type: "core::byte_array::ByteArray",
+              kind: "data",
+            },
+            {
+              name: "poll_type",
+              type: "contracts::enums::poll_contract_enums::PollType",
+              kind: "data",
+            },
+            {
+              name: "created_at",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "end_time",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "is_token_gated",
+              type: "core::bool",
+              kind: "data",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+              kind: "data",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::VoteCasted",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "voter",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "option_index",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::PollEnded",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "total_votes",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "winning_option",
+              type: "core::integer::u32",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::pollContract::PollingContract::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "PollCreated",
+              type: "contracts::events::poll_contract_events::PollCreated",
+              kind: "nested",
+            },
+            {
+              name: "VoteCasted",
+              type: "contracts::events::poll_contract_events::VoteCasted",
+              kind: "nested",
+            },
+            {
+              name: "PollEnded",
+              type: "contracts::events::poll_contract_events::PollEnded",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x7d6510f0b4fc99e74185ddec91755d253e06caefad896178f9c06613de9a3fb",
+    },
+  },
+} as const;
 
 export default deployedContracts;
