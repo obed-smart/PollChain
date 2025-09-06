@@ -153,6 +153,9 @@ pub mod AttendanceContract {
                 assert(current_time <= time, 'Session has ended');
             }
 
+            if session.is_token_gated {
+            }
+
             let attendance_record = AttendanceRecord {
                 attendee: attendee, session_id: session_id, checked_in_at: current_time,
             };
@@ -304,11 +307,10 @@ pub mod AttendanceContract {
 
         /// Get total sessions count
         fn get_total_sessions(self: @ContractState) -> u256 {
-            self.total_sessions.read()  
+            self.total_sessions.read()
         }
-
         /// Check if session has capacity
-        // fn has_capacity(self: @ContractState, session_id: u256) -> bool {
-        // }
+    // fn has_capacity(self: @ContractState, session_id: u256) -> bool {
+    // }
     }
 }

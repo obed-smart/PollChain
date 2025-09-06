@@ -51,11 +51,12 @@ pub trait IAttendanceContract<TContractState> {
     ) -> Array<u256>;
 
     /// Get user's attendance history
-    fn get_user_attendance_history(self: @TContractState, user: ContractAddress, page: u256, page_size: u256,) -> Array<AttendanceSession>;
+    fn get_user_attendance_history(
+        self: @TContractState, user: ContractAddress, page: u256, page_size: u256,
+    ) -> Array<AttendanceSession>;
 
     /// Get total sessions count
     fn get_total_sessions(self: @TContractState) -> u256;
-
     /// Check if session has capacity
-    // fn has_capacity(self: @TContractState, session_id: u256) -> bool;
+// fn has_capacity(self: @TContractState, session_id: u256) -> bool;
 }

@@ -288,8 +288,7 @@ pub mod PollingContract {
             if let Some(time) = poll.end_time {
                 let current_time = get_block_timestamp();
                 assert(current_time < time, 'poll has ended');
-            } 
-            
+            }
 
             /// Validate if the poll is token-gated
             if poll.is_token_gated {

@@ -15,32 +15,32 @@ use crate::structs::utils_structs::TokenGateConfig;
 #[starknet::interface]
 pub trait IPollingContract<TContractState> {
     /// Create a poll in the storage slot
-        ///
-        /// # Parameters
-        /// - `title`: The title of the poll
-        /// - `description`: The description of the poll
-        /// - `poll_options`: The options for the poll (2 for Yes/No, 3-10 for MultipleChoice)
-        /// - `poll_type`: The type of the poll
-        /// - `end_time`: Optional end time for the poll
-        /// - `token_gate_config`: Optional token gating configuration
-        ///
-        /// # Behaviour
-        /// - Validates input parameters based on poll type and token gating
-        /// - Creates a new poll and stores it
-        /// - Updates relevant mappings and counters
-        /// - write to the storage slot
-        /// - Emits a `PollCreated` event
-        ///
-        /// # Requirements
-        /// - The caller must not be the zero address
-        /// - For Yes/No polls, exactly 2 options must be provided
-        /// - For MultipleChoice polls, between 3 and 10 options must be provided
-        /// - If an end time is provided, it must be in the future
-        /// - If token gating is enabled, the configuration must be valid
-        /// - The creator must meet the token gating requirements if enabled
-        /// # Returns
-        /// - The ID of the newly created poll
-       
+    ///
+    /// # Parameters
+    /// - `title`: The title of the poll
+    /// - `description`: The description of the poll
+    /// - `poll_options`: The options for the poll (2 for Yes/No, 3-10 for MultipleChoice)
+    /// - `poll_type`: The type of the poll
+    /// - `end_time`: Optional end time for the poll
+    /// - `token_gate_config`: Optional token gating configuration
+    ///
+    /// # Behaviour
+    /// - Validates input parameters based on poll type and token gating
+    /// - Creates a new poll and stores it
+    /// - Updates relevant mappings and counters
+    /// - write to the storage slot
+    /// - Emits a `PollCreated` event
+    ///
+    /// # Requirements
+    /// - The caller must not be the zero address
+    /// - For Yes/No polls, exactly 2 options must be provided
+    /// - For MultipleChoice polls, between 3 and 10 options must be provided
+    /// - If an end time is provided, it must be in the future
+    /// - If token gating is enabled, the configuration must be valid
+    /// - The creator must meet the token gating requirements if enabled
+    /// # Returns
+    /// - The ID of the newly created poll
+
     fn create_poll(
         ref self: TContractState,
         title: ByteArray,

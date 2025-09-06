@@ -1,4 +1,4 @@
 pub enum EventType {
     Poll,
-    Attendance, 
+    Attendance,
 }
