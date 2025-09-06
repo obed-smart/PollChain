@@ -1,24 +1,37 @@
 #[starknet::contract]
 pub mod PollingContract {
+    use core::cmp::min;
     use core::num::traits::Zero;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
         StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
-    use crate::enums::poll_contract_enums::{GateType, PollType};
+    use starknet::{ClassHash, ContractAddress, get_block_timestamp, get_caller_address};
+    use crate::enums::poll_contract_enums::PollType;
     use crate::events::poll_contract_events::{PollCreated, PollEnded, VoteCasted};
     use crate::interfaces::ipoll_contract_interface::IPollingContract;
-    use crate::structs::poll_contract_structs::{Poll, OptionsResult, TokenGateConfig, Vote, Winner};
+    use crate::structs::poll_contract_structs::{Poll, PollResult, Vote, Winner};
+    use crate::structs::utils_structs::TokenGateConfig;
+    use crate::utils::validators::{
+        process_and_validate_token_gate_config, validate_voter_eligibility,
+    };
 
-    // All event to emit when action happens
-    #[derive(Drop, starknet::Event)]
-    #[event]
-    pub enum Event {
-        PollCreated: PollCreated,
-        VoteCasted: VoteCasted,
-        PollEnded: PollEnded,
-    }
+
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+
+
+    // Ownable Mixin
+    #[abi(embed_v0)]
+    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+
+    // Upgradeable
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
+
 
     #[storage]
     struct Storage {
@@ -40,29 +53,52 @@ pub mod PollingContract {
         /// - Map the creators address to total number of votes received
         creator_total_votes: Map<ContractAddress, u256>,
         /// - Map the poll_id to the total number of votes
-        poll_vote_count: Map<u256, u256>,
+
+        /// - Map the poll_id and the voter address to the total number of votes by each voter
+        voter_vote_count: Map<ContractAddress, u256>,
         /// - Map poll_id to the address of the voters
         poll_voters: Map<u256, ContractAddress>,
         /// # implemented this storage slot because the Poll struct does not Implement Array<T> Or
         /// Span<T>
-
         /// - Map the poll_id --> option_index --> the text content
         poll_options: Map<(u256, usize), ByteArray>,
         /// - Map the poll_id --> the option --> total vote on each option Global counters
         poll_option_votes: Map<(u256, u32), u256>,
         /// # Global conter state
-
         /// - Next_id of new poll
         next_poll_id: u256,
         /// - Total number of polls created
         total_polls_count: u256,
         /// - Total number of active polls
         total_active_polls: u256,
+        ///
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
+    }
+
+
+    // All event to emit when action happens
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    pub enum Event {
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
+        /// create poll event
+        PollCreated: PollCreated,
+        // cast vote event
+        VoteCasted: VoteCasted,
+        /// end vote event
+        PollEnded: PollEnded,
     }
 
 
     #[constructor]
-    fn constructor(ref self: ContractState) {
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
+        self.ownable.initializer(owner);
         self.next_poll_id.write(1);
         self.total_polls_count.write(0);
         self.total_active_polls.write(0);
@@ -111,10 +147,9 @@ pub mod PollingContract {
             // allow creating poll only if the creator is not zero address
             assert(!creator.is_zero(), 'caller cannot be zero address');
             assert(title.len() > 0, 'Title required');
-            assert(title.len() < 15, 'Title too long');
+            assert(title.len() <= 15, 'Title too long');
             assert(description.len() > 0, 'Description required');
             assert(description.len() > 20, 'Description required');
-            assert(description.len() < 100, 'Description too long');
 
             // Different validation based on poll type
             match poll_type {
@@ -130,9 +165,10 @@ pub mod PollingContract {
                 Option::Some(time) => {
                     let current_time = get_block_timestamp();
                     assert(time > current_time, 'end time must be in future');
-                    time
+                    assert(time > current_time, 'end time must be in future');
+                    Option::Some(time)
                 },
-                Option::None => 0,
+                Option::None => Option::None(()),
             };
 
             // get the global next_poll_id
@@ -142,81 +178,9 @@ pub mod PollingContract {
             /// if token_gate_config.is_some()
             /// then validate the configuration
             /// else set default values
-            let (is_token_gated, gate_type, token_address, minimum_balance, required_nft_id) =
-                match token_gate_config {
-                Some(config) => {
-                    if config.enabled {
-                        // validate if the creator meets the gating requirements
-
-                        match config.gate_type {
-                            GateType::ERC20Token => {
-                                /// allow only if the token address is not zero
-                                assert(
-                                    !config.token_address.is_zero(), 'Token address cannot be zero',
-                                );
-                                /// allow only if the minimum balance is > zero
-                                assert(
-                                    config.minimum_balance > 0, 'Minimum balance must be > zero',
-                                );
-                                (
-                                    true,
-                                    config.gate_type,
-                                    config.token_address,
-                                    config.minimum_balance,
-                                    Option::None,
-                                )
-                            },
-                            GateType::ERC721NFT => {
-                                /// allow only if the token address is not zero
-                                assert(
-                                    !config.token_address.is_zero(), 'Token address cannot be zero',
-                                );
-
-                                /// allow only if the nft id is not zero when provided
-                                if let Option::Some(id) = config.required_nft_id {
-                                    assert(id != Zero::zero(), 'Required NFT ID cannot be zero');
-                                }
-
-                                let min_nfts = if config.minimum_balance == 0 {
-                                    1
-                                } else {
-                                    config.minimum_balance
-                                };
-
-                                (
-                                    true,
-                                    config.gate_type,
-                                    config.token_address,
-                                    min_nfts,
-                                    config.required_nft_id,
-                                )
-                            },
-                            GateType::ERC721NFTCollection => {
-                                /// allow only if the token address is not zero address
-                                assert(!config.token_address.is_zero(), 'Collection addr');
-
-                                assert(
-                                    config.minimum_balance > 0, 'Minimum balance must be > zero',
-                                );
-
-                                (
-                                    true,
-                                    config.gate_type,
-                                    config.token_address,
-                                    config.minimum_balance,
-                                    Option::None,
-                                )
-                            },
-                            GateType::None => {
-                                (false, GateType::None, Zero::zero(), 0, Option::None)
-                            },
-                        }
-                    } else {
-                        (false, GateType::None, Zero::zero(), 0, Option::None)
-                    }
-                },
-                None => { (false, GateType::None, Zero::zero(), 0, Option::None) },
-            };
+            let TokenGateConfig {
+                enabled: is_token_gated, gate_type, token_address, minimum_balance, required_nft_id,
+            } = process_and_validate_token_gate_config(creator, token_gate_config);
 
             // create a new poll instance
             let poll = Poll {
@@ -308,6 +272,9 @@ pub mod PollingContract {
             /// allow voting only the voter is not zero address
             assert(!voter.is_zero(), 'Voter cannot be zero');
 
+            /// allow only if the voter is not the pool creator
+            assert(poll.creator != voter, 'Poll creator cannot vote');
+
             /// allow voting only if the poll exist
             assert(poll.poll_id == poll_id, 'Poll does not exist');
 
@@ -318,13 +285,14 @@ pub mod PollingContract {
             assert(!self.user_has_voted.read((poll_id, voter)), 'Already voted');
 
             /// allow only if the end_time is Option::None
-            if poll.end_time != 0 {
-                // Check if the poll has ended
-                assert(timestamp <= poll.end_time, 'Poll has ended');
+            if let Some(time) = poll.end_time {
+                let current_time = get_block_timestamp();
+                assert(current_time < time, 'poll has ended');
             }
 
             /// Validate if the poll is token-gated
-            if poll.is_token_gated { // validate
+            if poll.is_token_gated {
+                validate_voter_eligibility(voter, poll.clone());
             }
 
             /// # Read storage slots
@@ -335,10 +303,16 @@ pub mod PollingContract {
             /// - Read the creator total votes
             let creator_total_votes = self.creator_total_votes.read(poll.creator);
 
+            /// - Read the voter vote count
+            let voter_vote_count = self.voter_vote_count.read(voter);
+
             /// # Write storage slots
 
             /// - Write the poll option votes
             self.poll_option_votes.write((poll_id, option_index.into()), options_count + 1);
+
+            /// - Write the voter vote count
+            self.voter_vote_count.write(voter, voter_vote_count + 1);
 
             /// - Write the creator total votes
             self.creator_total_votes.write(poll.creator, creator_total_votes + 1);
@@ -390,8 +364,8 @@ pub mod PollingContract {
 
             assert(poll.is_active, 'Poll already closed');
 
-            if poll.end_time > 0 {
-                assert(current_time >= poll.end_time, 'Poll has not ended');
+            if poll.end_time.unwrap() > 0 {
+                assert(current_time >= poll.end_time.unwrap(), 'Poll has not ended');
             }
 
             // Close poll
@@ -454,12 +428,16 @@ pub mod PollingContract {
         ///
         /// # Returns
         /// - An array of `Poll` structs created by the specified creator
-        fn get_polls_by_creator(self: @ContractState, creator: ContractAddress) -> Array<Poll> {
+        fn get_polls_by_creator(
+            self: @ContractState, creator: ContractAddress, page: u256, page_size: u256,
+        ) -> Array<Poll> {
             let mut creator_polls = ArrayTrait::new();
             let count = self.creator_poll_count.read(creator);
-            let mut index: u256 = 1;
+            let start = page * page_size + 1;
+            let end = min(start + page_size - 1, count);
 
-            while index != count {
+            let mut index = start;
+            while index != end {
                 let poll_id = self.polls_by_creator.read((creator, index));
                 let poll = self.polls.read(poll_id);
                 creator_polls.append(poll);
@@ -468,7 +446,6 @@ pub mod PollingContract {
 
             creator_polls
         }
-
         /// Get total polls count
         fn get_total_polls(self: @ContractState) -> u256 {
             self.total_polls_count.read()
@@ -478,8 +455,8 @@ pub mod PollingContract {
         ///
         /// # Parameters
         /// - `poll_id`: The identifier of the poll
-        fn get_poll_total_votes(self: @ContractState, poll_id: u256) -> u256 {
-            self.poll_vote_count.read(poll_id)
+        fn get_poll_total_votes(self: @ContractState, poll_id: u256) -> u64 {
+            self.polls.read(poll_id).total_votes
         }
 
         /// Get total vote per poll_option
@@ -518,7 +495,7 @@ pub mod PollingContract {
         /// - An array of `ContractAddress` representing the voters
         fn get_poll_voters(self: @ContractState, poll_id: u256) -> Array<ContractAddress> {
             let mut voters_address = ArrayTrait::new();
-            let voters_count = self.poll_vote_count.read(poll_id);
+            let voters_count = self.polls.read(poll_id).total_votes;
 
             for _ in 1..=voters_count {
                 let voter = self.poll_voters.read(poll_id);
@@ -541,6 +518,8 @@ pub mod PollingContract {
         fn calculate_winner(self: @ContractState, poll_id: u256) -> Winner {
             let poll = self.polls.read(poll_id);
             assert(poll.poll_id == poll_id, 'Poll does not exist');
+            assert(!poll.is_active, 'Poll is still open');
+
             let mut max_votes: u256 = 0;
             let mut winner: u32 = 0;
 
@@ -570,13 +549,13 @@ pub mod PollingContract {
         ///
         /// # Returns
         /// - An array of `Result` structs containing the option index, vote count, and
-        fn get_poll_results(self: @ContractState, poll_id: u256) -> Array<OptionsResult> {
+        fn get_poll_results(self: @ContractState, poll_id: u256) -> Array<PollResult> {
             let mut results = ArrayTrait::new();
             let poll = self.polls.read(poll_id);
             assert(poll.poll_id == poll_id, 'Poll does not exist');
 
-            let total_votes:u256 = poll.total_votes.try_into().unwrap();
-            let num_options = poll.num_options; 
+            let total_votes: u256 = poll.total_votes.try_into().unwrap();
+            let num_options = poll.num_options;
 
             let mut i: u32 = 0;
 
@@ -589,13 +568,50 @@ pub mod PollingContract {
                     (votes * 100_u256) / total_votes
                 };
 
-                let result = OptionsResult { option_index: i, votes: votes, percentage: percentage };
+                let result = PollResult { option_index: i, votes: votes, percentage: percentage };
                 results.append(result);
 
                 i += 1;
             }
             results
         }
-        
+
+        fn get_voter_poll_count(
+            self: @ContractState, poll_id: u256, voter: ContractAddress,
+        ) -> u256 {
+            self.voter_vote_count.read(voter)
+        }
+
+
+        fn get_voter_polls(
+            self: @ContractState, voter: ContractAddress, page: u256, page_size: u256,
+        ) -> Array<Poll> {
+            let mut voter_polls = ArrayTrait::new();
+            let count = self.voter_vote_count.read(voter);
+
+            let start = page * page_size + 1;
+            let end = min(start + page_size - 1, count);
+
+            let mut index = start;
+            while index != end {
+                let poll_id = self.polls_by_creator.read((voter, index));
+                let poll = self.polls.read(poll_id);
+                voter_polls.append(poll);
+                index += 1;
+            }
+
+            voter_polls
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            // This function can only be called by the owner
+            self.ownable.assert_only_owner();
+
+            // Replace the class hash upgrading the contract
+            self.upgradeable.upgrade(new_class_hash);
+        }
     }
 }

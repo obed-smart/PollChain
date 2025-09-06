@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     PollingContract: {
       address:
-        "0x5e5baacb3d9eadc8494bacd8c1d91bd1fefca5d5c0b6db8c6c1d93f4e9948c4",
+        "0x3af901d5756d6f2cd867b18066d8415eb8a1a3148f685cb8df053a2e8c02bec",
       abi: [
         {
           type: "impl",
@@ -91,6 +91,10 @@ const deployedContracts = {
               name: "ERC721NFT",
               type: "()",
             },
+            {
+              name: "ERC721NFTCollection",
+              type: "()",
+            },
           ],
         },
         {
@@ -139,7 +143,7 @@ const deployedContracts = {
             },
             {
               name: "minimum_balance",
-              type: "core::integer::u256",
+              type: "core::integer::u32",
             },
             {
               name: "required_nft_id",
@@ -194,8 +198,16 @@ const deployedContracts = {
               type: "core::integer::u64",
             },
             {
+              name: "is_active",
+              type: "core::bool",
+            },
+            {
               name: "total_votes",
-              type: "core::integer::u256",
+              type: "core::integer::u64",
+            },
+            {
+              name: "num_options",
+              type: "core::integer::u32",
             },
             {
               name: "is_token_gated",
@@ -211,7 +223,7 @@ const deployedContracts = {
             },
             {
               name: "minimum_balance",
-              type: "core::integer::u256",
+              type: "core::integer::u32",
             },
             {
               name: "required_nft_id",
@@ -234,6 +246,38 @@ const deployedContracts = {
             {
               name: "timestamp",
               type: "core::integer::u64",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Winner",
+          members: [
+            {
+              name: "option_index",
+              type: "core::integer::u32",
+            },
+            {
+              name: "vote_count",
+              type: "core::integer::u256",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::PollResult",
+          members: [
+            {
+              name: "option_index",
+              type: "core::integer::u32",
+            },
+            {
+              name: "votes",
+              type: "core::integer::u256",
+            },
+            {
+              name: "percentage",
+              type: "core::integer::u256",
             },
           ],
         },
@@ -363,11 +407,16 @@ const deployedContracts = {
             },
             {
               type: "function",
-              name: "get_active_polls",
-              inputs: [],
+              name: "get_active_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
               outputs: [
                 {
-                  type: "core::array::Array::<core::integer::u256>",
+                  type: "core::bool",
                 },
               ],
               state_mutability: "view",
@@ -379,6 +428,14 @@ const deployedContracts = {
                 {
                   name: "creator",
                   type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "page",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "page_size",
+                  type: "core::integer::u256",
                 },
               ],
               outputs: [
@@ -395,6 +452,106 @@ const deployedContracts = {
               outputs: [
                 {
                   type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_total_votes",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_votes_per_poll_option",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "option_index",
+                  type: "core::integer::u8",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_creator_total_votes",
+              inputs: [
+                {
+                  name: "creator",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_voters",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::starknet::contract_address::ContractAddress>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "calculate_winner",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Winner",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_results",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::PollResult>",
                 },
               ],
               state_mutability: "view",
@@ -505,6 +662,11 @@ const deployedContracts = {
               type: "core::integer::u32",
               kind: "data",
             },
+            {
+              name: "ended_at",
+              type: "core::integer::u64",
+              kind: "data",
+            },
           ],
         },
         {
@@ -531,7 +693,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x7d6510f0b4fc99e74185ddec91755d253e06caefad896178f9c06613de9a3fb",
+        "0x75755f3fd4633b1ae0a8f109f178852f1081af0dae1c43781a727b4eaf178e3",
     },
   },
 } as const;

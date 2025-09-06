@@ -51,6 +51,15 @@ const deployScript = async (): Promise<void> => {
       // owner: deployer.address,
     },
   });
+
+  await deployContract({
+    contract: "PollingContract",
+    constructorArgs: {
+      owner: deployer.address,
+    },
+  });
+
+
 };
 
 const main = async (): Promise<void> => {
