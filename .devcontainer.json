@@ -1,13 +1,20 @@
 {
-    "name": "Scaffold Stark",
-    "image": "starknetfoundation/starknet-dev:2.11.4",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "StarkWare.cairo1",
-                "tamasfe.even-better-toml",
-                "vscode-icons-team.vscode-icons"
-            ]
-        }
+  "name": "Scaffold Stark",
+  "image": "starknetfoundation/starknet-dev:2.11.4",
+  "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "StarkWare.cairo1",
+        "tamasfe.even-better-toml",
+        "vscode-icons-team.vscode-icons"
+      ]
     }
+  }
 }
+
+  // "runArgs": [
+  //   "--cpus=4",
+  //   "-m=8g"
+  //   "-p", "5050:5050"
+  // ],

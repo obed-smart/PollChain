@@ -11,7 +11,7 @@ pub struct PollCreated {
     pub title: ByteArray,
     pub poll_type: PollType,
     pub created_at: u64,
-    pub end_time: u64,
+    pub end_time: Option<u64>,
     pub is_token_gated: bool,
     pub gate_type: GateType,
     pub token_address: ContractAddress,
