@@ -153,8 +153,7 @@ pub mod AttendanceContract {
                 assert(current_time <= time, 'Session has ended');
             }
 
-            if session.is_token_gated {
-            }
+            
 
             let attendance_record = AttendanceRecord {
                 attendee: attendee, session_id: session_id, checked_in_at: current_time,
