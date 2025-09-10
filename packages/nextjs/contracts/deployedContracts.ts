@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     PollingContract: {
       address:
-        "0x3af901d5756d6f2cd867b18066d8415eb8a1a3148f685cb8df053a2e8c02bec",
+        "0x6fe4d7581cecc5f7bccadf9a1daab5aa1fa336e55accf99c31bcede782f7ba4",
       abi: [
         {
           type: "impl",
@@ -127,7 +127,7 @@ const deployedContracts = {
         },
         {
           type: "struct",
-          name: "contracts::structs::poll_contract_structs::TokenGateConfig",
+          name: "contracts::structs::utils_structs::TokenGateConfig",
           members: [
             {
               name: "enabled",
@@ -153,11 +153,11 @@ const deployedContracts = {
         },
         {
           type: "enum",
-          name: "core::option::Option::<contracts::structs::poll_contract_structs::TokenGateConfig>",
+          name: "core::option::Option::<contracts::structs::utils_structs::TokenGateConfig>",
           variants: [
             {
               name: "Some",
-              type: "contracts::structs::poll_contract_structs::TokenGateConfig",
+              type: "contracts::structs::utils_structs::TokenGateConfig",
             },
             {
               name: "None",
@@ -195,7 +195,7 @@ const deployedContracts = {
             },
             {
               name: "end_time",
-              type: "core::integer::u64",
+              type: "core::option::Option::<core::integer::u64>",
             },
             {
               name: "is_active",
@@ -311,7 +311,7 @@ const deployedContracts = {
                 },
                 {
                   name: "token_gate_config",
-                  type: "core::option::Option::<contracts::structs::poll_contract_structs::TokenGateConfig>",
+                  type: "core::option::Option::<contracts::structs::utils_structs::TokenGateConfig>",
                 },
               ],
               outputs: [
@@ -556,12 +556,219 @@ const deployedContracts = {
               ],
               state_mutability: "view",
             },
+            {
+              type: "function",
+              name: "get_voter_poll_count",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_voter_polls",
+              inputs: [
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "page",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "page_size",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::Poll>",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "UpgradeableImpl",
+          interface_name: "openzeppelin_upgrades::interface::IUpgradeable",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_upgrades::interface::IUpgradeable",
+          items: [
+            {
+              type: "function",
+              name: "upgrade",
+              inputs: [
+                {
+                  name: "new_class_hash",
+                  type: "core::starknet::class_hash::ClassHash",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableMixinImpl",
+          interface_name: "openzeppelin_access::ownable::interface::OwnableABI",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::OwnableABI",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "transferOwnership",
+              inputs: [
+                {
+                  name: "newOwner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounceOwnership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
           ],
         },
         {
           type: "constructor",
           name: "constructor",
-          inputs: [],
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+          kind: "struct",
+          members: [
+            {
+              name: "class_hash",
+              type: "core::starknet::class_hash::ClassHash",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "Upgraded",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+              kind: "nested",
+            },
+          ],
         },
         {
           type: "event",
@@ -595,7 +802,7 @@ const deployedContracts = {
             },
             {
               name: "end_time",
-              type: "core::integer::u64",
+              type: "core::option::Option::<core::integer::u64>",
               kind: "data",
             },
             {
@@ -675,6 +882,16 @@ const deployedContracts = {
           kind: "enum",
           variants: [
             {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "UpgradeableEvent",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+              kind: "flat",
+            },
+            {
               name: "PollCreated",
               type: "contracts::events::poll_contract_events::PollCreated",
               kind: "nested",
@@ -693,7 +910,1227 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x75755f3fd4633b1ae0a8f109f178852f1081af0dae1c43781a727b4eaf178e3",
+        "0x43b4d74fb870b7dbcb0224898fde9b5dd964eb94d454901b69dc46b932ed9fd",
+    },
+  },
+  sepolia: {
+    PollingContract: {
+      address:
+        "0x16920c53dff06e979c5ef3ac3004a9f6d8ab6931b29d316ea3c76f1906bd670",
+      abi: [
+        {
+          type: "impl",
+          name: "Pollingimpl",
+          interface_name:
+            "contracts::interfaces::ipoll_contract_interface::IPollingContract",
+        },
+        {
+          type: "struct",
+          name: "core::byte_array::ByteArray",
+          members: [
+            {
+              name: "data",
+              type: "core::array::Array::<core::bytes_31::bytes31>",
+            },
+            {
+              name: "pending_word",
+              type: "core::felt252",
+            },
+            {
+              name: "pending_word_len",
+              type: "core::integer::u32",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "contracts::enums::poll_contract_enums::PollType",
+          variants: [
+            {
+              name: "YesNo",
+              type: "()",
+            },
+            {
+              name: "MultipleChoice",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<core::integer::u64>",
+          variants: [
+            {
+              name: "Some",
+              type: "core::integer::u64",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "contracts::enums::poll_contract_enums::GateType",
+          variants: [
+            {
+              name: "None",
+              type: "()",
+            },
+            {
+              name: "ERC20Token",
+              type: "()",
+            },
+            {
+              name: "ERC721NFT",
+              type: "()",
+            },
+            {
+              name: "ERC721NFTCollection",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<core::integer::u256>",
+          variants: [
+            {
+              name: "Some",
+              type: "core::integer::u256",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::utils_structs::TokenGateConfig",
+          members: [
+            {
+              name: "enabled",
+              type: "core::bool",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "minimum_balance",
+              type: "core::integer::u32",
+            },
+            {
+              name: "required_nft_id",
+              type: "core::option::Option::<core::integer::u256>",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<contracts::structs::utils_structs::TokenGateConfig>",
+          variants: [
+            {
+              name: "Some",
+              type: "contracts::structs::utils_structs::TokenGateConfig",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Poll",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+            },
+            {
+              name: "creator",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "title",
+              type: "core::byte_array::ByteArray",
+            },
+            {
+              name: "description",
+              type: "core::byte_array::ByteArray",
+            },
+            {
+              name: "poll_type",
+              type: "contracts::enums::poll_contract_enums::PollType",
+            },
+            {
+              name: "created_at",
+              type: "core::integer::u64",
+            },
+            {
+              name: "end_time",
+              type: "core::option::Option::<core::integer::u64>",
+            },
+            {
+              name: "is_active",
+              type: "core::bool",
+            },
+            {
+              name: "total_votes",
+              type: "core::integer::u64",
+            },
+            {
+              name: "num_options",
+              type: "core::integer::u32",
+            },
+            {
+              name: "is_token_gated",
+              type: "core::bool",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "minimum_balance",
+              type: "core::integer::u32",
+            },
+            {
+              name: "required_nft_id",
+              type: "core::option::Option::<core::integer::u256>",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Vote",
+          members: [
+            {
+              name: "voter",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "option_index",
+              type: "core::integer::u8",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::Winner",
+          members: [
+            {
+              name: "option_index",
+              type: "core::integer::u32",
+            },
+            {
+              name: "vote_count",
+              type: "core::integer::u256",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::structs::poll_contract_structs::PollResult",
+          members: [
+            {
+              name: "option_index",
+              type: "core::integer::u32",
+            },
+            {
+              name: "votes",
+              type: "core::integer::u256",
+            },
+            {
+              name: "percentage",
+              type: "core::integer::u256",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::interfaces::ipoll_contract_interface::IPollingContract",
+          items: [
+            {
+              type: "function",
+              name: "create_poll",
+              inputs: [
+                {
+                  name: "title",
+                  type: "core::byte_array::ByteArray",
+                },
+                {
+                  name: "description",
+                  type: "core::byte_array::ByteArray",
+                },
+                {
+                  name: "poll_options",
+                  type: "core::array::Array::<core::byte_array::ByteArray>",
+                },
+                {
+                  name: "poll_type",
+                  type: "contracts::enums::poll_contract_enums::PollType",
+                },
+                {
+                  name: "end_time",
+                  type: "core::option::Option::<core::integer::u64>",
+                },
+                {
+                  name: "token_gate_config",
+                  type: "core::option::Option::<contracts::structs::utils_structs::TokenGateConfig>",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "vote",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "option_index",
+                  type: "core::integer::u8",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "close_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Poll",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "has_voted",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_user_vote",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Vote",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_active_poll",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_polls_by_creator",
+              inputs: [
+                {
+                  name: "creator",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "page",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "page_size",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::Poll>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_polls",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_total_votes",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_total_votes_per_poll_option",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "option_index",
+                  type: "core::integer::u8",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_creator_total_votes",
+              inputs: [
+                {
+                  name: "creator",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_voters",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<core::starknet::contract_address::ContractAddress>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "calculate_winner",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::structs::poll_contract_structs::Winner",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_poll_results",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::PollResult>",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_voter_poll_count",
+              inputs: [
+                {
+                  name: "poll_id",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u256",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_voter_polls",
+              inputs: [
+                {
+                  name: "voter",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "page",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "page_size",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::array::Array::<contracts::structs::poll_contract_structs::Poll>",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "UpgradeableImpl",
+          interface_name: "openzeppelin_upgrades::interface::IUpgradeable",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_upgrades::interface::IUpgradeable",
+          items: [
+            {
+              type: "function",
+              name: "upgrade",
+              inputs: [
+                {
+                  name: "new_class_hash",
+                  type: "core::starknet::class_hash::ClassHash",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableMixinImpl",
+          interface_name: "openzeppelin_access::ownable::interface::OwnableABI",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::OwnableABI",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "transferOwnership",
+              inputs: [
+                {
+                  name: "newOwner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounceOwnership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+          kind: "struct",
+          members: [
+            {
+              name: "class_hash",
+              type: "core::starknet::class_hash::ClassHash",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "Upgraded",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::PollCreated",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "creator",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "title",
+              type: "core::byte_array::ByteArray",
+              kind: "data",
+            },
+            {
+              name: "poll_type",
+              type: "contracts::enums::poll_contract_enums::PollType",
+              kind: "data",
+            },
+            {
+              name: "created_at",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "end_time",
+              type: "core::option::Option::<core::integer::u64>",
+              kind: "data",
+            },
+            {
+              name: "is_token_gated",
+              type: "core::bool",
+              kind: "data",
+            },
+            {
+              name: "gate_type",
+              type: "contracts::enums::poll_contract_enums::GateType",
+              kind: "data",
+            },
+            {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::VoteCasted",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "voter",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "option_index",
+              type: "core::integer::u8",
+              kind: "data",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::poll_contract_events::PollEnded",
+          kind: "struct",
+          members: [
+            {
+              name: "poll_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "total_votes",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "winning_option",
+              type: "core::integer::u32",
+              kind: "data",
+            },
+            {
+              name: "ended_at",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::pollContract::PollingContract::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "UpgradeableEvent",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "PollCreated",
+              type: "contracts::events::poll_contract_events::PollCreated",
+              kind: "nested",
+            },
+            {
+              name: "VoteCasted",
+              type: "contracts::events::poll_contract_events::VoteCasted",
+              kind: "nested",
+            },
+            {
+              name: "PollEnded",
+              type: "contracts::events::poll_contract_events::PollEnded",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x2af6eceb9b9cb2ea053f9d0f64c02af418424d0bf909bf5276f8137cba1bd4d",
+    },
+    AttendanceContract: {
+      address:
+        "0x5c330f2fb565956cba404968262a3438921699ab4a94a0b2b8c30b7e5da11d1",
+      abi: [
+        {
+          type: "impl",
+          name: "UpgradeableImpl",
+          interface_name: "openzeppelin_upgrades::interface::IUpgradeable",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_upgrades::interface::IUpgradeable",
+          items: [
+            {
+              type: "function",
+              name: "upgrade",
+              inputs: [
+                {
+                  name: "new_class_hash",
+                  type: "core::starknet::class_hash::ClassHash",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableMixinImpl",
+          interface_name: "openzeppelin_access::ownable::interface::OwnableABI",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::OwnableABI",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "transferOwnership",
+              inputs: [
+                {
+                  name: "newOwner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounceOwnership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+          kind: "struct",
+          members: [
+            {
+              name: "class_hash",
+              type: "core::starknet::class_hash::ClassHash",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "Upgraded",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Upgraded",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::byte_array::ByteArray",
+          members: [
+            {
+              name: "data",
+              type: "core::array::Array::<core::bytes_31::bytes31>",
+            },
+            {
+              name: "pending_word",
+              type: "core::felt252",
+            },
+            {
+              name: "pending_word_len",
+              type: "core::integer::u32",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::attendance_contract_events::SessionCreated",
+          kind: "struct",
+          members: [
+            {
+              name: "session_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "organizer",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "title",
+              type: "core::byte_array::ByteArray",
+              kind: "data",
+            },
+            {
+              name: "created_at",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::attendance_contract_events::CheckedIn",
+          kind: "struct",
+          members: [
+            {
+              name: "session_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "attendee",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::events::attendance_contract_events::SessionClosed",
+          kind: "struct",
+          members: [
+            {
+              name: "session_id",
+              type: "core::integer::u256",
+              kind: "key",
+            },
+            {
+              name: "closed_by",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "timestamp",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::attendanceContract::AttendanceContract::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "UpgradeableEvent",
+              type: "openzeppelin_upgrades::upgradeable::UpgradeableComponent::Event",
+              kind: "flat",
+            },
+            {
+              name: "SessionCreated",
+              type: "contracts::events::attendance_contract_events::SessionCreated",
+              kind: "nested",
+            },
+            {
+              name: "CheckedIn",
+              type: "contracts::events::attendance_contract_events::CheckedIn",
+              kind: "nested",
+            },
+            {
+              name: "SessionClosed",
+              type: "contracts::events::attendance_contract_events::SessionClosed",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x5ab83e9acb57b2fbce9b07ee2110e90c299d8749d1e14b3ab0f3139ccfcbb7c",
     },
   },
 } as const;

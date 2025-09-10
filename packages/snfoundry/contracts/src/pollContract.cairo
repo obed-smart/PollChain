@@ -16,7 +16,7 @@ pub mod PollingContract {
     use crate::structs::poll_contract_structs::{Poll, PollResult, Vote, Winner};
     use crate::structs::utils_structs::TokenGateConfig;
     use crate::utils::validators::{
-        process_and_validate_token_gate_config, validate_voter_eligibility,
+        process_and_validate_token_gate_config, validate_poll_voter_eligibility
     };
 
 
@@ -291,9 +291,7 @@ pub mod PollingContract {
             }
 
             /// Validate if the poll is token-gated
-            if poll.is_token_gated {
-                validate_voter_eligibility(voter, poll.clone());
-            }
+            validate_poll_voter_eligibility(voter, poll.clone());
 
             /// # Read storage slots
 

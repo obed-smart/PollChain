@@ -3,7 +3,7 @@ use crate::enums::poll_contract_enums::GateType;
 
 
 /// Attendance session information
-#[derive(Drop, Serde, starknet::Store)]
+#[derive(Drop, Serde, starknet::Store, Clone)]
 pub struct AttendanceSession {
     pub session_id: u256,
     pub organizer: ContractAddress,

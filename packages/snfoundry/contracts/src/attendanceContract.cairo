@@ -2,16 +2,33 @@
 pub mod AttendanceContract {
     use core::cmp::min;
     use core::num::traits::Zero;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::interface::IUpgradeable;
     use starknet::storage::{
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
         StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
+    use starknet::{ClassHash, ContractAddress, get_block_timestamp, get_caller_address};
     use crate::events::attendance_contract_events::{CheckedIn, SessionClosed, SessionCreated};
     use crate::interfaces::iattendance_contract_interface::IAttendanceContract;
     use crate::structs::attendance_contract_structs::*;
     use crate::structs::utils_structs::TokenGateConfig;
     use crate::utils::validators::process_and_validate_token_gate_config;
+    use crate::utils::validators::validate_session_attendee_eligibility;
+
+
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+
+
+    // Ownable Mixin
+    #[abi(embed_v0)]
+    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+
+    // Upgradeable
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
 
     #[storage]
@@ -42,15 +59,39 @@ pub mod AttendanceContract {
         next_session_id: u256,
         total_sessions: u256,
         total_active_sessions: u256,
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
+        /// Inherited events
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
+        /// Inherited events
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
+        /// Attendance events
+        /// - Session created
         SessionCreated: SessionCreated,
+        /// - User checked in
         CheckedIn: CheckedIn,
+        /// - Session closed
         SessionClosed: SessionClosed,
     }
+
+    #[constructor]
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
+        self.ownable.initializer(owner);
+        // Initialize global counters
+        self.next_session_id.write(1);
+        self.total_sessions.write(0);
+        self.total_active_sessions.write(0);
+    }
+
 
     impl AttendanceImpl of IAttendanceContract<ContractState> {
         fn create_session(
@@ -153,7 +194,8 @@ pub mod AttendanceContract {
                 assert(current_time <= time, 'Session has ended');
             }
 
-            
+            // Validate token gate if enabled
+         validate_session_attendee_eligibility(attendee, session.clone());
 
             let attendance_record = AttendanceRecord {
                 attendee: attendee, session_id: session_id, checked_in_at: current_time,
@@ -311,5 +353,16 @@ pub mod AttendanceContract {
         /// Check if session has capacity
     // fn has_capacity(self: @ContractState, session_id: u256) -> bool {
     // }
+    }
+
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            // This function can only be called by the owner
+            self.ownable.assert_only_owner();
+
+            // Replace the class hash upgrading the contract
+            self.upgradeable.upgrade(new_class_hash);
+        }
     }
 }

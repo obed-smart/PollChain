@@ -3,8 +3,9 @@ use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTr
 use openzeppelin::token::erc721::interface::{IERC721Dispatcher, IERC721DispatcherTrait};
 use starknet::ContractAddress;
 use crate::enums::poll_contract_enums::GateType;
-use crate::structs::poll_contract_structs::Poll;
 use crate::structs::utils_structs::TokenGateConfig;
+use crate::structs::attendance_contract_structs::AttendanceSession;
+use crate::structs::poll_contract_structs::Poll;
 
 
 pub fn process_and_validate_token_gate_config(
@@ -82,34 +83,61 @@ pub fn process_and_validate_token_gate_config(
 }
 
 
-pub fn validate_voter_eligibility(voter: ContractAddress, poll: Poll) {
-    if !poll.is_token_gated {
+fn validate_eligibility_with_config_gated(user: ContractAddress, config: TokenGateConfig) {
+    if !config.enabled {
         return;
     }
 
-    match poll.gate_type {
+    match config.gate_type {
         GateType::ERC20Token => {
-            let token_contract = IERC20Dispatcher { contract_address: poll.token_address };
-            let balance = token_contract.balance_of(voter);
-            assert(balance >= poll.minimum_balance.into(), 'Not enough tokens');
+            let token_contract = IERC20Dispatcher { contract_address: config.token_address };
+            let balance = token_contract.balance_of(user);
+            assert(balance >= config.minimum_balance.into(), 'Not enough tokens');
         },
         GateType::ERC721NFT => {
-            let nft_contract = IERC721Dispatcher { contract_address: poll.token_address };
+            let nft_contract = IERC721Dispatcher { contract_address: config.token_address };
 
-            if let Option::Some(id) = poll.required_nft_id {
+            if let Option::Some(id) = config.required_nft_id {
                 let owner = nft_contract.owner_of(id);
-                assert(owner == voter, 'NFT required to vote');
+                assert(owner == user, 'NFT required');
             } else {
-                let balance = nft_contract.balance_of(voter);
-                assert(balance >= poll.minimum_balance.into(), 'Must own NFT');
+                let balance = nft_contract.balance_of(user);
+                assert(balance >= config.minimum_balance.into(), 'Must own NFT');
             }
         },
         GateType::ERC721NFTCollection => {
-            let nft_contract = IERC721Dispatcher { contract_address: poll.token_address };
-            let balance = nft_contract.balance_of(voter);
-            assert(balance >= poll.minimum_balance.into(), 'Must own NFT from collection');
+            let nft_contract = IERC721Dispatcher { contract_address: config.token_address };
+            let balance = nft_contract.balance_of(user);
+            assert(balance >= config.minimum_balance.into(), 'Must own NFT from collection');
         },
         GateType::None => {},
     }
 }
 
+// For AttendanceContract
+pub fn validate_session_attendee_eligibility(attendee: ContractAddress, session: AttendanceSession) {
+    if session.is_token_gated {
+        let config = TokenGateConfig {
+            enabled: session.is_token_gated,
+            gate_type: session.gate_type,
+            token_address: session.token_address,
+            minimum_balance: session.minimum_balance,
+            required_nft_id: session.required_nft_id,
+        };
+        validate_eligibility_with_config_gated(attendee, config);
+    }
+}
+
+// For PollingContract (your existing one)
+pub fn validate_poll_voter_eligibility(voter: ContractAddress, poll: Poll) {
+    if poll.is_token_gated {
+        let config = TokenGateConfig {
+            enabled: poll.is_token_gated,
+            gate_type: poll.gate_type,
+            token_address: poll.token_address,
+            minimum_balance: poll.minimum_balance,
+            required_nft_id: poll.required_nft_id,
+        };
+        validate_eligibility_with_config_gated(voter, config);
+    }
+}
