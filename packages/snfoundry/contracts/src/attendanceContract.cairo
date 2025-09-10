@@ -14,8 +14,9 @@ pub mod AttendanceContract {
     use crate::interfaces::iattendance_contract_interface::IAttendanceContract;
     use crate::structs::attendance_contract_structs::*;
     use crate::structs::utils_structs::TokenGateConfig;
-    use crate::utils::validators::process_and_validate_token_gate_config;
-    use crate::utils::validators::validate_session_attendee_eligibility;
+    use crate::utils::validators::{
+        process_and_validate_token_gate_config, validate_session_attendee_eligibility,
+    };
 
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -93,6 +94,8 @@ pub mod AttendanceContract {
     }
 
 
+    /// main logic implementation
+    #[abi(embed_v0)]
     impl AttendanceImpl of IAttendanceContract<ContractState> {
         fn create_session(
             ref self: ContractState,
@@ -195,7 +198,7 @@ pub mod AttendanceContract {
             }
 
             // Validate token gate if enabled
-         validate_session_attendee_eligibility(attendee, session.clone());
+            validate_session_attendee_eligibility(attendee, session.clone());
 
             let attendance_record = AttendanceRecord {
                 attendee: attendee, session_id: session_id, checked_in_at: current_time,
