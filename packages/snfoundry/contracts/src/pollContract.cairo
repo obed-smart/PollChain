@@ -16,7 +16,7 @@ pub mod PollingContract {
     use crate::structs::poll_contract_structs::{Poll, PollResult, Vote, Winner};
     use crate::structs::utils_structs::TokenGateConfig;
     use crate::utils::validators::{
-        process_and_validate_token_gate_config, validate_poll_voter_eligibility
+        process_and_validate_token_gate_config, validate_poll_voter_eligibility,
     };
 
 
@@ -147,9 +147,8 @@ pub mod PollingContract {
             // allow creating poll only if the creator is not zero address
             assert(!creator.is_zero(), 'caller cannot be zero address');
             assert(title.len() > 0, 'Title required');
-            assert(title.len() <= 15, 'Title too long');
-            assert(description.len() > 0, 'Description required');
-            assert(description.len() > 20, 'Description required');
+            assert(description.len() > 0, 'Description /required');
+            assert(description.len() > 20, 'Description is too short');
 
             // Different validation based on poll type
             match poll_type {
@@ -398,11 +397,13 @@ pub mod PollingContract {
 
         /// Check if user has voted
         fn has_voted(self: @ContractState, poll_id: u256, voter: ContractAddress) -> bool {
+            assert(self.polls.read(poll_id).poll_id == poll_id, 'Poll does not exist');
             self.user_has_voted.read((poll_id, voter))
         }
 
         /// Get user's vote
         fn get_user_vote(self: @ContractState, poll_id: u256, voter: ContractAddress) -> Vote {
+            assert(self.polls.read(poll_id).poll_id == poll_id, 'Poll does not exist');
             self.voters.read((poll_id, voter))
         }
 
@@ -413,6 +414,7 @@ pub mod PollingContract {
         /// # Returns
         /// - A boolean indicating whether the poll is active
         fn get_active_poll(self: @ContractState, poll_id: u256) -> bool {
+            assert(self.polls.read(poll_id).poll_id == poll_id, 'Poll does not exist');
             self.active_polls.read(poll_id)
         }
 
@@ -444,6 +446,78 @@ pub mod PollingContract {
 
             creator_polls
         }
+
+
+        /// Get polls paginated
+        /// # Parameters
+        /// - `page`: The page number (0-based)e35gy
+        /// - `limit`: The number of polls per page
+        /// # Behaviour
+        /// - Retrieves a paginated list of polls
+        /// # Returns
+        /// - An array of `Poll` structs for the specified page
+        fn get_polls_paginated(self: @ContractState, page: u32, limit: u32) -> Array<Poll> {
+            let mut polls = ArrayTrait::new();
+            let total_polls = self.total_polls_count.read().try_into().unwrap();
+            let start = page * limit + 1;
+            let end = min(start + limit - 1, total_polls);
+
+            if start > total_polls {
+                return polls;
+            }
+            let mut i = start;
+            while i != end {
+                let poll = self.polls.read(i.into());
+                polls.append(poll);
+                i += 1;
+            }
+            polls
+        }
+
+        /// get poll options
+        /// # parameters
+        /// - `poll_id`: The identifier of the poll
+        /// # Behaviour
+        /// - Retrieves the options for the specified poll
+        /// # Returns
+        /// - An array of `ByteArray` representing the poll options
+
+        fn get_poll_options(self: @ContractState, poll_id: u256) -> Array<ByteArray> {
+            let mut options = ArrayTrait::new();
+            let poll = self.polls.read(poll_id);
+            assert(poll.poll_id == poll_id.into(), 'Poll does not exist');
+            let num_options = poll.num_options;
+
+            let mut i: u32 = 0;
+            while i != num_options {
+                let option = self.poll_options.read((poll_id, i.into()));
+                options.append(option);
+                i += 1;
+            }
+            options
+        }
+
+        fn get_recent_polls(self: @ContractState, count: u32) -> Array<Poll> {
+            let mut recent_polls = ArrayTrait::new();
+            let total_polls = self.total_polls_count.read().try_into().unwrap();
+
+            if total_polls == 0 {
+                return recent_polls;
+            }
+
+            let start  = if total_polls < count { 1 } else { total_polls - count + 1 };
+
+            let mut i = total_polls;
+            while i != start {
+                let poll = self.polls.read(i.into());
+                recent_polls.append(poll);
+                i -= 1;
+            }
+
+            recent_polls
+        }
+
+
         /// Get total polls count
         fn get_total_polls(self: @ContractState) -> u256 {
             self.total_polls_count.read()
@@ -493,7 +567,9 @@ pub mod PollingContract {
         /// - An array of `ContractAddress` representing the voters
         fn get_poll_voters(self: @ContractState, poll_id: u256) -> Array<ContractAddress> {
             let mut voters_address = ArrayTrait::new();
-            let voters_count = self.polls.read(poll_id).total_votes;
+            let poll = self.polls.read(poll_id);
+            assert(poll.poll_id == poll_id, 'Poll does not exist');
+            let voters_count = poll.total_votes;
 
             for _ in 1..=voters_count {
                 let voter = self.poll_voters.read(poll_id);

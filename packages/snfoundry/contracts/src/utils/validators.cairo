@@ -90,12 +90,12 @@ fn validate_eligibility_with_config_gated(user: ContractAddress, config: TokenGa
 
     match config.gate_type {
         GateType::ERC20Token => {
-            let token_contract = IERC20Dispatcher { contract_address: config.token_address };
+            let token_contract = IERC20Dispatcher { contract_address: config.token_address.try_into().unwrap() };
             let balance = token_contract.balance_of(user);
             assert(balance >= config.minimum_balance.into(), 'Not enough tokens');
         },
         GateType::ERC721NFT => {
-            let nft_contract = IERC721Dispatcher { contract_address: config.token_address };
+            let nft_contract = IERC721Dispatcher { contract_address: config.token_address.try_into().unwrap() };
 
             if let Option::Some(id) = config.required_nft_id {
                 let owner = nft_contract.owner_of(id);
@@ -106,7 +106,7 @@ fn validate_eligibility_with_config_gated(user: ContractAddress, config: TokenGa
             }
         },
         GateType::ERC721NFTCollection => {
-            let nft_contract = IERC721Dispatcher { contract_address: config.token_address };
+            let nft_contract = IERC721Dispatcher { contract_address: config.token_address.try_into().unwrap() };
             let balance = nft_contract.balance_of(user);
             assert(balance >= config.minimum_balance.into(), 'Must own NFT from collection');
         },
@@ -120,7 +120,7 @@ pub fn validate_session_attendee_eligibility(attendee: ContractAddress, session:
         let config = TokenGateConfig {
             enabled: session.is_token_gated,
             gate_type: session.gate_type,
-            token_address: session.token_address,
+            token_address: session.token_address.try_into().unwrap(),
             minimum_balance: session.minimum_balance,
             required_nft_id: session.required_nft_id,
         };
@@ -128,13 +128,15 @@ pub fn validate_session_attendee_eligibility(attendee: ContractAddress, session:
     }
 }
 
+
+
 // For PollingContract (your existing one)
 pub fn validate_poll_voter_eligibility(voter: ContractAddress, poll: Poll) {
     if poll.is_token_gated {
         let config = TokenGateConfig {
             enabled: poll.is_token_gated,
             gate_type: poll.gate_type,
-            token_address: poll.token_address,
+            token_address: poll.token_address.try_into().unwrap(),
             minimum_balance: poll.minimum_balance,
             required_nft_id: poll.required_nft_id,
         };

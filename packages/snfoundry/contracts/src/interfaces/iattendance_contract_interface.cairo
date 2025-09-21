@@ -4,6 +4,7 @@
 
 use starknet::ContractAddress;
 use crate::structs::attendance_contract_structs::{AttendanceRecord, AttendanceSession};
+
 use crate::structs::utils_structs::TokenGateConfig;
 
 
@@ -57,6 +58,8 @@ pub trait IAttendanceContract<TContractState> {
 
     /// Get total sessions count
     fn get_total_sessions(self: @TContractState) -> u256;
+    
+
     /// Check if session has capacity
 // fn has_capacity(self: @TContractState, session_id: u256) -> bool;
 }

@@ -108,4 +108,13 @@ pub trait IPollingContract<TContractState> {
     fn get_voter_polls(
         self: @TContractState, voter: ContractAddress, page: u256, page_size: u256,
     ) -> Array<Poll>;
+
+    // get polls paginated
+    fn get_polls_paginated(self: @TContractState, page: u32, limit: u32) -> Array<Poll>;
+
+    // get poll options
+    fn get_poll_options(self: @TContractState, poll_id: u256) -> Array<ByteArray>;
+
+    // get recent polls
+    fn get_recent_polls(self: @TContractState, count: u32) -> Array<Poll>;
 }
